@@ -1,0 +1,5 @@
+{
+  "name": "Remix: SMC ADMIN PORTAL",
+  "description": "A business management system that stores customer and supplier data in the cloud for cross-device access.",
+  "requestFramePermissions": []
+}

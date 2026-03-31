@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer of the business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "openingBalance": { "type": "number" },
+        "taxPercentage": { "type": "number" },
+        "ledger": { "type": "array", "items": { "$ref": "LedgerEntry" } }
+      },
+      "required": ["id", "name"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "A supplier of the business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "openingBalance": { "type": "number" },
+        "ledger": { "type": "array", "items": { "$ref": "LedgerEntry" } }
+      },
+      "required": ["id", "name"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "A product in the inventory.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "unit": { "type": "string" },
+        "buyingPrice": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "stock": { "type": "number" }
+      },
+      "required": ["id", "name"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A sales transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerId": { "type": "string" },
+        "date": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "object" } },
+        "taxPercentage": { "type": "number" },
+        "taxAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "receivedAmount": { "type": "number" },
+        "balance": { "type": "number" }
+      },
+      "required": ["id", "customerId", "date"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "A purchase transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "date": { "type": "string" },
+        "items": { "type": "array", "items": { "type": "object" } },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "balance": { "type": "number" }
+      },
+      "required": ["id", "supplierId", "date"]
+    },
+    "CashTransaction": {
+      "title": "CashTransaction",
+      "description": "A cash or bank transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "type": { "type": "string", "enum": ["IN", "OUT"] },
+        "mode": { "type": "string", "enum": ["CASH", "BANK"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string" },
+        "customerId": { "type": "string" },
+        "supplierId": { "type": "string" }
+      },
+      "required": ["id", "date", "type", "mode", "amount"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "An employee of the business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "designation": { "type": "string" },
+        "joiningDate": { "type": "string" },
+        "ledger": { "type": "array", "items": { "$ref": "LedgerEntry" } }
+      },
+      "required": ["id", "name"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "A ledger entry for a customer, supplier, or employee.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "credit": { "type": "number" },
+        "debit": { "type": "number" }
+      },
+      "required": ["id", "date"]
+    },
+    "CompanyDetails": {
+      "title": "CompanyDetails",
+      "description": "Details of the company.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "website": { "type": "string" },
+        "gstin": { "type": "string" },
+        "logo": { "type": "string" }
+      },
+      "required": ["name", "address", "phone", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/settings/company": { "schema": "CompanyDetails", "description": "Company profile" },
+    "/users/{userId}/customers/{customerId}": { "schema": "Customer", "description": "Customer records" },
+    "/users/{userId}/suppliers/{supplierId}": { "schema": "Supplier", "description": "Supplier records" },
+    "/users/{userId}/products/{productId}": { "schema": "Product", "description": "Product inventory" },
+    "/users/{userId}/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
+    "/users/{userId}/purchases/{purchaseId}": { "schema": "Purchase", "description": "Purchase records" },
+    "/users/{userId}/cash/{transactionId}": { "schema": "CashTransaction", "description": "Cash transactions" },
+    "/users/{userId}/employees/{employeeId}": { "schema": "Employee", "description": "Employee records" }
+  }
+}

@@ -1,0 +1,124 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+    function isValidStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string && 
+             request.resource.data[field].size() >= minLen && 
+             request.resource.data[field].size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidCustomer() {
+      return hasRequiredFields(['id', 'name']) &&
+             isValidStringLength('name', 1, 100) &&
+             request.resource.data.id is string;
+    }
+    function isValidSupplier() {
+      return hasRequiredFields(['id', 'name']) &&
+             isValidStringLength('name', 1, 100) &&
+             request.resource.data.id is string;
+    }
+    function isValidProduct() {
+      return hasRequiredFields(['id', 'name']) &&
+             isValidStringLength('name', 1, 100) &&
+             request.resource.data.id is string &&
+             request.resource.data.stock is number;
+    }
+    function isValidSale() {
+      return hasRequiredFields(['id', 'customerId', 'date']) &&
+             request.resource.data.id is string &&
+             request.resource.data.customerId is string;
+    }
+    function isValidPurchase() {
+      return hasRequiredFields(['id', 'supplierId', 'date']) &&
+             request.resource.data.id is string &&
+             request.resource.data.supplierId is string;
+    }
+    function isValidCashTransaction() {
+      return hasRequiredFields(['id', 'date', 'type', 'mode', 'amount']) &&
+             request.resource.data.type in ['IN', 'OUT'] &&
+             request.resource.data.mode in ['CASH', 'BANK'] &&
+             request.resource.data.amount is number;
+    }
+    function isValidEmployee() {
+      return hasRequiredFields(['id', 'name']) &&
+             isValidStringLength('name', 1, 100) &&
+             request.resource.data.id is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+    match /users/{userId} {
+      // Allow public access to 'global' user for storage without auth
+      allow read, write: if userId == 'global' || isOwner(userId);
+      
+      match /settings/{settingId} {
+        allow read, write: if userId == 'global' || isOwner(userId);
+      }
+
+      match /customers/{customerId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidCustomer();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidCustomer();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /suppliers/{supplierId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidSupplier();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidSupplier();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /products/{productId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidProduct();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidProduct();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /sales/{saleId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidSale();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidSale();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /purchases/{purchaseId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidPurchase();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidPurchase();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /cash/{transactionId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidCashTransaction();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidCashTransaction();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+      match /employees/{employeeId} {
+        allow read: if userId == 'global' || isOwner(userId);
+        allow create: if (userId == 'global' || isOwner(userId)) && isValidEmployee();
+        allow update: if (userId == 'global' || isOwner(userId)) && isValidEmployee();
+        allow delete: if userId == 'global' || isOwner(userId);
+      }
+    }
+  }
+}
